@@ -48,13 +48,21 @@ class Misc(commands.Cog):
 
     @commands.command()
     @commands.guild_only()
-    async def avatar(self, ctx, user:discord.Member = None):
+    async def avatar(self, ctx, user = None):
         '''
         Nice avatar you got there, be a shame if someone were to steal that
         '''
 
-        if not user:
-            user = ctx.author
+        try:
+            if not user:
+                user = ctx.author
+
+            else:
+                user = await commands.MemberConverter().convert(ctx, user)
+
+        except commands.errors.MemberNotFound:
+            await ctx.send("{} Well, since you didn't give me a valid user, I've decided to take it a step further and just not give an avatar at all.".format(ctx.author.mention))
+            return
 
         e = discord.Embed(color = discord.Color.random(), description = "**{}'s avatar**\n\n".format(user.display_name))
         e.set_author(name = "So {}, you want to 'take a look' at {}'s avatar?".format(ctx.author.display_name, user.display_name), icon_url = ctx.author.avatar_url)
@@ -111,7 +119,7 @@ class Misc(commands.Cog):
         
     @commands.command(aliases = ["say"])
     @commands.guild_only()
-    async def quote(self, ctx, *, message:str = ""):
+    async def quote(self, ctx, *message):
         '''
         Why are you even looking at this the bot just says whatever you say
         '''
@@ -120,7 +128,7 @@ class Misc(commands.Cog):
             await ctx.send("{} has no words.".format(ctx.user.name))
         
         else:
-            await ctx.send("\"{}\"\n\n - {}".format(message, ctx.author.mention))
+            await ctx.send("\"{}\"\n\n - {}".format(" ".join(message), ctx.author.mention))
     
     @commands.command()
     @commands.guild_only()
@@ -200,8 +208,27 @@ class Misc(commands.Cog):
         
         e.set_footer(text = "Now you know totally top-secret information lol")
         await ctx.send(embed = e)
+
+    @commands.command(aliases = ["wheel"])
+    @commands.guild_only()
+    async def spin(self, ctx, *choices):
+        '''
+        Spin the wheel! Take a shot! Who wins? Who loses? Like I'd tell you!
+        '''
+        loadingMessage = await ctx.send("{} Choosing...".format(ctx.author.mention))
+        time.sleep(1)
+        
+        if(len(choices) == 1):
+            await loadingMessage.edit(content = "{} Well isn't that special, you've chosen {}, which also happens to be the only option. What a surpise.".format(ctx.author.mention, random.choice(choices)))
+                
+        elif(choices):
+            await loadingMessage.edit(content = "{} has chosen {}, isn't that lucky".format(ctx.author.mention, random.choice(choices)))
+
+        else:
+            await loadingMessage.edit(content = "{} Oh wait! I can't choose, not when I have nothing to choose from!".format(ctx.author.mention))
+
     
-    @commands.command(aliases = ["tias"])
+    @commands.command(aliases = ["tias"], hidden = True)
     @commands.guild_only()
     async def thisisaserver(self, ctx):
         '''
@@ -214,33 +241,48 @@ class Misc(commands.Cog):
     
     @commands.command(aliases = ["whois"])
     @commands.guild_only()
-    async def userinfo(self, ctx, user:discord.Member = None):
+    async def userinfo(self, ctx, user = None):
         '''
         They say the best defense is a good offense, which is to learn everything about your opponent and to use it against them
         '''
 
-        if not user:
-            user = ctx.author
+        try:
+            if not user:
+                user = ctx.author
+
+            else:
+                user = await commands.MemberConverter().convert(ctx, user)
+
+        except commands.errors.MemberNotFound:
+            await ctx.send("{} Hey there buddy, energetic as you are, I can only doxx people who I know exist IN THE SERVER".format(ctx.author.mention))
+            return
 
         e = discord.Embed(color = discord.Color.random(), description = "**All About {}**\n\n".format(user.mention))
-        e.set_author(name = "So {}, you want to know all about {}?".format(ctx.author.nick, user.nick if user is not ctx.author else "yourself"), icon_url = ctx.author.avatar_url)
+        e.set_author(name = "So {}, you want to know all about {}?".format(ctx.author.name, user.name if user is not ctx.author else "yourself"), icon_url = ctx.author.avatar_url)
         e.set_thumbnail(url = user.avatar_url)
 
-        #TODO: Activities is always blank
-        activities = user.activities
-        for x in range(len(activities)):
-            activities[x] = activities[x].details
+        activities = []
+        for x in user.activities:
+            activityType = ""
+            
+            if(x.type == discord.ActivityType.playing): activityType = "Playing "
+            if(x.type == discord.ActivityType.streaming): activityType = "Streaming "
+            if(x.type == discord.ActivityType.listening): activityType = "Listening to "
+            if(x.type == discord.ActivityType.watching): activityType = "Watching "
+            if(x.type == discord.ActivityType.custom): activityType = "Status: "
+            if(x.type == discord.ActivityType.competing): activityType = "Competing in "
+                
+            activities.append(activityType + x.name)
 
         e.add_field(name = "Created Account at:", value = user.created_at.strftime("%A, %B %d, %Y, at %I:%M:%S%p"))
-        e.add_field(name = "Joined Server at:", value = user.joined_at.strftime("%A, %B %d, %Y, at %I:%M:%S%p") if user.joined_at != None else "This user is no longer among us")
+        e.add_field(name = "Joined Server at:", value = user.joined_at.strftime("%A, %B %d, %Y, at %I:%M:%S%p"))
         e.add_field(name = "Roles:", value = "".join([user.roles[x].mention for x in range(len(user.roles) - 1, 0, -1)]))
         e.add_field(name = "Color:", value = user.color)
         e.add_field(name = "ID:", value = user.id)
         e.add_field(name = "Activities:", value = "\n".join(activities))
         e.add_field(name = "Permissions:", value = ", ".join(u for u in dict(user.guild_permissions) if dict(user.guild_permissions)[u]))
-        #TODO: Status is always "offline"
         e.add_field(name = "Status:", value = user.raw_status)
-        e.add_field(name = "Has Nitro:", value = "Yea nice I guess" if user.premium_since != None else "No lmao")
+        e.add_field(name = "Has Boosted:", value = "Yea nice I guess" if user.premium_since != None else "No lmao")
 
         e.set_footer(text = "Boom, now you know everything about them")
 
