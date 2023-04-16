@@ -71,30 +71,6 @@ class Misc(commands.Cog):
 
     @commands.command()
     @commands.guild_only()
-    async def getrandom(self, ctx, min:str = "", max:str = ""):
-        '''
-        For when you lack the creativity and willpower to do it yourself
-        '''
-
-        if(not min or not max):
-            await ctx.send("{} Did you really just ask me to give a random number without giving me anything?".format(ctx.author.mention))
-            return
-
-        try:
-            min = int(min)
-            max = int(max)
-        except ValueError:
-            await ctx.send("{} Either you typed too fast, or are just plain stupid, but either way, you need to give numbers, not some code you made up.".format(ctx.author.mention))
-            return
-        
-        if(min > max):
-            await ctx.send("{} Under what circumstances did you think that {} is greater than {}?".format(ctx.author.mention, min, max))
-            return
-        
-        await ctx.send("{} Your random number is: **{}**".format(ctx.author.mention, random.randint(min, max)))
-
-    @commands.command()
-    @commands.guild_only()
     async def ping(self, ctx):
         '''
         Shows how fast the bot is
@@ -129,6 +105,31 @@ class Misc(commands.Cog):
         
         else:
             await ctx.send("\"{}\"\n\n - {}".format(" ".join(message), ctx.author.mention))
+
+    @commands.command()
+    @commands.guild_only()
+    async def random(self, ctx, min = "", max = ""):
+        '''
+        For when you lack the creativity and willpower to do it yourself
+        '''
+
+        if(not min or not max):
+            await ctx.send("{} Did you really just ask me to give a random number without giving me anything?".format(ctx.author.mention))
+            return
+
+        try:
+            min = int(min)
+            max = int(max)
+        except ValueError:
+            await ctx.send("{} Either you typed too fast, or are just plain stupid, but either way, you need to give numbers, not some code you made up.".format(ctx.author.mention))
+            return
+        
+        if(min > max):
+            await ctx.send("{} Under what circumstances did you think that {} is greater than {}?".format(ctx.author.mention, min, max))
+            return
+        
+        await ctx.send("{} Your random number is: **{}**".format(ctx.author.mention, random.randint(min, max)))
+
     
     @commands.command()
     @commands.guild_only()
