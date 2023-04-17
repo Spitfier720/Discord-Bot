@@ -275,13 +275,22 @@ class Misc(commands.Cog):
                 
             activities.append(activityType + x.name)
 
+        perms = []
+        for x, y in dict(user.guild_permissions).items():
+            if(y):
+                modified  = x.split("_")
+                for z in range(len(modified)):
+                    modified[z] = modified[z][0].upper() + modified[z][1:]
+    
+                perms.append(" ".join(modified))
+
         e.add_field(name = "Created Account at:", value = user.created_at.strftime("%A, %B %d, %Y, at %I:%M:%S%p"))
         e.add_field(name = "Joined Server at:", value = user.joined_at.strftime("%A, %B %d, %Y, at %I:%M:%S%p"))
-        e.add_field(name = "Roles:", value = "".join([user.roles[x].mention for x in range(len(user.roles) - 1, 0, -1)]))
-        e.add_field(name = "Color:", value = user.color)
+        e.add_field(name = "Roles:", value = "".join([user.roles[x].mention for x in range(len(user.roles) - 1, 0, -1)]) if len(user.roles) != 1 else "Just wasn't cut out for any of them")
+        e.add_field(name = "Color:", value = user.color if user.color != discord.Color.default() else "The boring default")
         e.add_field(name = "ID:", value = user.id)
-        e.add_field(name = "Activities:", value = "\n".join(activities))
-        e.add_field(name = "Permissions:", value = ", ".join(u for u in dict(user.guild_permissions) if dict(user.guild_permissions)[u]))
+        e.add_field(name = "Activities:", value = "\n".join(activities) if activities else "Quite frankly none of your business")
+        e.add_field(name = "Permissions:", value = ", ".join(perms) if perms else "THIS GUY CAN'T DO ANYTHING LMAOOOOOOOO")
         e.add_field(name = "Status:", value = user.raw_status)
         e.add_field(name = "Has Boosted:", value = "Yea nice I guess" if user.premium_since != None else "No lmao")
 
