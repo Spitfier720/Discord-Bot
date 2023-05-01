@@ -65,8 +65,8 @@ class Misc(commands.Cog):
             return
 
         e = discord.Embed(color = discord.Color.random(), description = "**{}'s avatar**\n\n".format(user.display_name))
-        e.set_author(name = "So {}, you want to 'take a look' at {}'s avatar?".format(ctx.author.display_name, user.display_name), icon_url = ctx.author.avatar_url)
-        e.set_image(url = user.avatar_url)
+        e.set_author(name = "So {}, you want to 'take a look' at {}'s avatar?".format(ctx.author.display_name, user.display_name), icon_url = ctx.author.display_avatar.url)
+        e.set_image(url = user.display_avatar.url)
         await ctx.send(embed = e)
 
     @commands.command()
@@ -101,7 +101,7 @@ class Misc(commands.Cog):
         '''
 
         if not message:
-            await ctx.send("{} has no words.".format(ctx.user.name))
+            await ctx.send("{} has no words.".format(ctx.author.name))
         
         else:
             await ctx.send("\"{}\"\n\n - {}".format(" ".join(message), ctx.author.mention))
@@ -139,8 +139,10 @@ class Misc(commands.Cog):
         '''
 
         e = discord.Embed(color = discord.Color.random(), description = "**{}**\n\n".format(ctx.message.guild.name))
-        e.set_author(name = "So {}, you want to see the inner workings of the server?".format(ctx.author.display_name), icon_url = ctx.author.avatar_url)
-        e.set_thumbnail(url = ctx.guild.icon_url)
+        e.set_author(name = "So {}, you want to see the inner workings of the server?".format(ctx.author.display_name), icon_url = ctx.author.display_avatar.url)
+        
+        if(ctx.guild.icon != None):
+            e.set_thumbnail(url = ctx.guild.icon.url)
 
         humans = 0
         bots = 0
@@ -220,10 +222,10 @@ class Misc(commands.Cog):
         time.sleep(1)
         
         if(len(choices) == 1):
-            await loadingMessage.edit(content = "{} Well isn't that special, you've chosen {}, which also happens to be the only option. What a surpise.".format(ctx.author.mention, random.choice(choices)))
+            await loadingMessage.edit(content = "{} Well isn't that special, you've chosen **{}**, which also happens to be the only option. What a surpise.".format(ctx.author.mention, random.choice(choices)))
                 
         elif(choices):
-            await loadingMessage.edit(content = "{} has chosen {}, isn't that lucky".format(ctx.author.mention, random.choice(choices)))
+            await loadingMessage.edit(content = "{} has chosen **{}**, isn't that lucky".format(ctx.author.mention, random.choice(choices)))
 
         else:
             await loadingMessage.edit(content = "{} Oh wait! I can't choose, not when I have nothing to choose from!".format(ctx.author.mention))
@@ -259,8 +261,8 @@ class Misc(commands.Cog):
             return
 
         e = discord.Embed(color = discord.Color.random(), description = "**All About {}**\n\n".format(user.mention))
-        e.set_author(name = "So {}, you want to know all about {}?".format(ctx.author.name, user.name if user is not ctx.author else "yourself"), icon_url = ctx.author.avatar_url)
-        e.set_thumbnail(url = user.avatar_url)
+        e.set_author(name = "So {}, you want to know all about {}?".format(ctx.author.name, user.name if user is not ctx.author else "yourself"), icon_url = ctx.author.display_avatar.url)
+        e.set_thumbnail(url = user.display_avatar.url)
 
         activities = []
         for x in user.activities:
@@ -298,5 +300,5 @@ class Misc(commands.Cog):
 
         await ctx.send(embed = e)
 
-def setup(bot):
-    bot.add_cog(Misc(bot))
+async def setup(bot):
+    await bot.add_cog(Misc(bot))
