@@ -67,6 +67,7 @@ class Misc(commands.Cog):
         e = discord.Embed(color = discord.Color.random(), description = "**{}'s avatar**\n\n".format(user.display_name))
         e.set_author(name = "So {}, you want to 'take a look' at {}'s avatar?".format(ctx.author.display_name, user.display_name), icon_url = ctx.author.display_avatar.url)
         e.set_image(url = user.display_avatar.url)
+        e.set_footer("Personally I'd rate it a {}/10".format(random.randint(0, 10)))
         await ctx.send(embed = e)
 
     @commands.command()
@@ -166,15 +167,6 @@ class Misc(commands.Cog):
         
         else:
             notificationLevel = "Nothing"
-        
-        rulesChannel = ctx.guild.rules_channel
-        announcementChannel = ctx.guild.public_updates_channel
-
-        if rulesChannel is not None:
-            rulesChannel = rulesChannel.mention
-        
-        if announcementChannel is not None:
-            announcementChannel = announcementChannel.mention
 
         emojiLimit = ctx.guild.emoji_limit
         level = "0"
@@ -188,26 +180,29 @@ class Misc(commands.Cog):
         if(emojiLimit == 250):
             level = "3"
         
-        afkChannel = ctx.guild.afk_channel
-
-        if afkChannel is not None:
-            afkChannel = afkChannel.mention
+        
+        
+        afkChannel = ctx.guild.afk_channel.mention if ctx.guild.afk_channel != None else None
+        announcementChannel = ctx.guild.public_updates_channel.mention if ctx.guild.public_updates_channel != None else None
+        rulesChannel = ctx.guild.rules_channel.mention if ctx.guild.rules_channel != None else None
+        systemChannel = ctx.guild.system_channel.mention if ctx.guild.system_channel != None else None
         
         e.add_field(name = "Member Info:", value = "Members: **{}**\nHumans: **{}**\nBots: **{}**".format(ctx.guild.member_count, humans, bots))
         e.add_field(name = "Owner:", value = ctx.guild.owner.mention)
         e.add_field(name = "Creation Date:", value = ctx.guild.created_at.strftime("%A, %B %d, %Y, at %I:%M:%S%p"))		
-        e.add_field(name = "Channels Info:", value = "Number of Text Channels: **{}**\nNumber of Voice Channels: **{}**\nTotal Number of Channels: **{}**\nNumber of Categories: **{}**".format(len(ctx.guild.text_channels), len(ctx.guild.voice_channels), len(ctx.guild.text_channels) + len(ctx.guild.voice_channels), len(ctx.guild.categories)))
+        e.add_field(name = "Channels Info:", value = \
+                    "Number of Text Channels: **{}**\nNumber of Voice Channels: **{}**\nTotal Number of Channels: **{}**\nNumber of Categories: **{}**"\
+                        .format(len(ctx.guild.text_channels), len(ctx.guild.voice_channels), len(ctx.guild.text_channels) + len(ctx.guild.voice_channels), len(ctx.guild.categories)))
         e.add_field(name = "Number of Roles:", value = len(ctx.guild.roles))
         e.add_field(name = "Number of emojis:", value = len(ctx.guild.emojis))
-        e.add_field(name = "Boost Level:", value = "Level {}".format(level))
         e.add_field(name = "Banner:", value = ctx.guild.banner)
-        e.add_field(name = "Special Channels:", value = "Rules Channel: {}\nAnnouncement Channels: {}".format(rulesChannel, announcementChannel))
+        e.add_field(name = "Special Channels:", value = \
+                    "AFK Channel: {}\nPublic Updates Channel: {}\nRules Channel: {}\nSystem Channel: {}"\
+                        .format(afkChannel, announcementChannel, rulesChannel, systemChannel))
         e.add_field(name = "Notification Settings:", value = notificationLevel)
         e.add_field(name = "Verification Level:", value = ctx.guild.verification_level)
-        e.add_field(name = "Default Role:", value = ctx.guild.default_role)
         e.add_field(name = "Description:", value = ctx.guild.description)
         e.add_field(name = "ID:", value = ctx.guild.id)
-        e.add_field(name = "AFK Settings:", value = "AFK Channel: {}\nAFK Timeout: {}s".format(afkChannel, ctx.guild.afk_timeout))
         
         e.set_footer(text = "Now you know totally top-secret information lol")
         await ctx.send(embed = e)
@@ -277,14 +272,14 @@ class Misc(commands.Cog):
                 
             activities.append(activityType + x.name)
 
-        perms = []
-        for x, y in dict(user.guild_permissions).items():
-            if(y):
-                modified  = x.split("_")
-                for z in range(len(modified)):
-                    modified[z] = modified[z][0].upper() + modified[z][1:]
-    
-                perms.append(" ".join(modified))
+        perms = "Commoner"
+        
+        if(((user.guild_permissions & discord.Permissions.elevated()).value > 0) or \
+           ((user.guild_permissions & discord.Permissions.stage_moderator()).value > 0)):
+            perms = "Moderator(or at least somewhat)"
+        
+        if(user.guild_permissions.administrator):
+            perms = "Admin"
 
         e.add_field(name = "Created Account at:", value = user.created_at.strftime("%A, %B %d, %Y, at %I:%M:%S%p"))
         e.add_field(name = "Joined Server at:", value = user.joined_at.strftime("%A, %B %d, %Y, at %I:%M:%S%p"))
@@ -292,7 +287,7 @@ class Misc(commands.Cog):
         e.add_field(name = "Color:", value = user.color if user.color != discord.Color.default() else "The boring default")
         e.add_field(name = "ID:", value = user.id)
         e.add_field(name = "Activities:", value = "\n".join(activities) if activities else "Quite frankly none of your business")
-        e.add_field(name = "Permissions:", value = ", ".join(perms) if perms else "THIS GUY CAN'T DO ANYTHING LMAOOOOOOOO")
+        e.add_field(name = "Level of Power:", value = perms)
         e.add_field(name = "Status:", value = user.raw_status)
         e.add_field(name = "Has Boosted:", value = "Yea nice I guess" if user.premium_since != None else "No lmao")
 
