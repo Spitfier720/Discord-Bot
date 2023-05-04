@@ -18,8 +18,6 @@ class MechaJimmy(commands.Bot):
         for extension in extensions:
             await bot.load_extension(extension)
 
-bot = MechaJimmy(command_prefix = ["mj ", "Mj ", "MJ "], case_insensitive = True, intents = intents)
-
 #Help command is in an embed.
 class HelpCommand(commands.MinimalHelpCommand):
     def __init__(self):
@@ -33,12 +31,13 @@ class HelpCommand(commands.MinimalHelpCommand):
         for page in self.paginator.pages:
             e.description += page
         
+        e.set_footer(text = "Wow, enlightening")
         await self.get_destination().send(embed=e)
 
     def get_opening_note(self):
         return "You can use `mj help [command]` to learn more about a specific command."
 
-bot.help_command = HelpCommand()
+bot = MechaJimmy(command_prefix = ["mj ", "Mj ", "MJ "], case_insensitive = True, intents = intents, help_command = HelpCommand())
 
 @bot.event
 async def on_ready():
